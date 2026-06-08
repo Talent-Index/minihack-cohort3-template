@@ -1,0 +1,13 @@
+.env
+cache/
+artifacts/
+typechain/
+typechain-types/
+node_modules/
+npm-debug.log*
+coverage/
+coverage.json
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
