@@ -1,0 +1,72 @@
+name: Welcome new contributor
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post welcome comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const sender = pr.user.login;
+
+            // Check if this is the contributor's first PR in this repo
+            const prs = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: 'all',
+              per_page: 100
+            });
+
+            const userPRs = prs.data.filter(p => p.user.login === sender);
+
+            if (userPRs.length === 1) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pr.number,
+                body: `Hey @${sender}, your PR is in.
+
+Before the reviewer picks this up, run through the checklist:
+
+- Branch name follows \`week-{N}-{your-github-handle}\`
+- PR title follows \`[Cohort X Week N] Your Name - Deliverable title\`
+- Every section of the PR template is filled in
+- \`.env.example\` is included, no real keys committed
+- PR link posted in \`#submissions\` on Discord
+- All weekly quests submitted on Plug and Play
+
+If anything above is missing, update the PR before the Sunday midnight EAT deadline.
+
+Resources while you wait for review:
+- Developer handbook: [team1-kenya-mini-hack.vercel.app](https://team1-kenya-mini-hack.vercel.app)
+- Fuji explorer: [testnet.snowtrace.io](https://testnet.snowtrace.io)
+- Builders Hub: [core.app/builders-hub](https://core.app/builders-hub)
+- Help: \`#help\` channel on Discord
+
+Good work shipping.`
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pr.number,
+                body: `PR received, @${sender}.
+
+Checklist before review:
+- [ ] Branch: \`week-{N}-{your-github-handle}\`
+- [ ] Title: \`[Cohort X Week N] Your Name - Deliverable title\`
+- [ ] PR template fully filled in
+- [ ] \`.env.example\` included, no real keys committed
+- [ ] PR link in \`#submissions\` on Discord
+- [ ] Quests submitted on Plug and Play
+
+Deadline: Sunday midnight EAT.`
+              });
+            }
